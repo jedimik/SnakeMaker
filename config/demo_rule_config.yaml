@@ -1,0 +1,204 @@
+---
+rule0:
+ - base:
+    path:  # If there is defined rule without input arguments
+    function_name: move_rule0 # if extra function is needed
+rules:
+  denoise_step1:
+    input:
+      b0:
+        path: ''
+        function: 
+          name: base_input_dir
+        folder: base
+        filename: b0.nii.gz
+      b1000:
+        path: ''
+        function: 
+          name: base_input_dir
+        folder: base
+        filename: b1000.nii.gz
+    output:
+      b0_denoised:
+        output_name: b0_denoised.nii.gz
+        output_folder: denoised
+      b1000_denoised:
+        output_name: b1000_denoised.nii.gz
+        output_folder: denoised
+    shell:
+    - dwidenoise {input.b0} {output.b0_denoised}
+    - dwidenoise {input.b1000} {output.b1000_denoised}
+    description: Denoise the input DWI data.
+  
+  deggibs_step1:
+    input:
+      b0_denoised: 
+      b1000_denoised: 
+    output:
+      b0_denoised_degibbs:
+        output_name: b0_denoised_degibbs.nii.gz
+        output_folder: degibbs
+      b1000_denoised_degibbs:
+        output_name: b1000_denoised_degibbs.nii.gz
+        output_folder: degibbs
+    shell:
+    - mrdegibbs {input.b0_denoised} {output.b0_denoised_degibbs}
+    - mrdegibbs {input.b1000_denoised} {output.b1000_denoised_degibbs}
+  
+  topup_step1:
+    input:
+      b0_denoised_degibbs:
+      b1000_denoised_degibbs:
+    output:
+      roi_b0:
+        output_name: roi_b0.nii.gz
+        output_folder: topup
+      roi_b1000:
+        output_name: roi_b1000.nii.gz
+        output_folder: topup
+    shell:
+    - fslroi {input.b0_denoised_degibbs} {output.roi_b0} 0 1
+    - fslroi {input.b1000_denoised_degibbs} {output.roi_b1000} 0 1
+  
+  topup_step2:
+    input:
+      roi_b0:
+      roi_b1000:
+    output:
+      b0_b1000_merged:
+        output_name: b0_b1000.nii.gz
+        output_folder: topup      
+    shell:
+    - fslmerge -t {output.b0_b1000_merged} {input.roi_b1000} {input.roi_b0}
+  
+  topup_step3:
+    input:
+      b0_json:
+        path: ''
+        function: 
+          name: base_input_dir
+        folder: base
+        filename: b0.json
+    output:
+      acq_params:
+        output_name: acq_params.txt
+        output_folder: topup
+    params:
+      readout_value:      
+        function:
+          name: findTotalReadoutTime
+          args:
+            from_input:
+              b0_json:
+                name: b0_json
+    output:
+      acq_params:
+        output_name: acq_params.txt
+        output_folder: topup
+    shell:
+    - echo "0 1 0 {params.b0_json}\n0 -1 0 {params.b0_json}" > {output.acq_params}
+  
+  topup_step4:
+    input:
+      b0_b1000_merged:
+      acq_params:
+    output:
+      b0_b1000_merged_topup:
+        output_name: b0_b1000_topup.nii.gz
+        output_folder: topup
+      b0_b1000_merged_topup_field:
+        output_name: b0_b1000_topup_fieldmap_Hz.nii.gz
+        output_folder: topup
+    params:
+      topup_config: "b02b0_1.cnf"
+    shell:
+    - topup --imain={input.b0_b1000_merged} --datain={input.acq_params} --config={params.topup_config} --out={output.b0_b1000_merged_topup} -fout={output.b0_b1000_merged_topup_field}
+  
+  topup_step5:
+    input:
+      b0_denoised_degibbs:
+      acq_params:
+      b0_b1000_merged_topup:
+    params:
+      inindex: 1
+      method: jac
+    output:
+      b1000_topup_brain:
+        output_name: b1000_brain.nii.gz
+        output_folder: topup
+    shell:
+    - applytopup --imain={input.b0_denoised_degibbs} --inindex={params.inindex} --datain={input.acq_params} --topup={input.b0_b1000_merged_topup} --method={params.method} --out={output.b1000_topup_brain}
+  
+  eddy_step1:
+    input:
+      b1000_topup_brain:
+    output:
+      b1000_1stVol:
+        output_name: b1000_1stVol.nii.gz
+        output_folder: eddy    
+    shell:
+    - fslroi {input.b1000_topup_brain} {output.b1000_1stVol} 0 1
+  
+  eddy_step2:
+    input:
+      b1000_1stVol:
+    params:
+      f: 0.2
+    output:
+      b1000_brain:
+        output_name: b1000_brain.nii.gz
+        output_folder: eddy
+    shell:
+    - bet {input.b1000_1stVol} {output.b1000_brain} -m -f {params.f}
+
+  eddy_step3:
+    input:
+      b0_bvec:             
+        function: 
+          name: base_input_dir
+        folder: base
+        filename: b0.bvec
+    output:
+      index_file:
+        output_name: index.txt
+        output_folder: eddy
+    run:
+      function: 
+        name: create_index_file
+        args:
+          from_input:
+            b0_bvec:
+              name: b0_bvec
+  eddy_step4:
+    input:
+      b1000_denoised_degibbs:
+      b1000_brain:
+      index_file:
+      acq_params:
+      b1000_bvec:
+        function: 
+          name: base_input_dir
+        folder: base
+        filename: b1000.bvec
+      b1000_bval:
+        function: 
+          name: base_input_dir
+        folder: base
+        filename: b1000.bval
+      b0_b1000_merged_topup:       
+    params:
+      fwhm: 0
+      flm: quadratic      
+    output:
+      b1000_eddy_unwarped:
+        output_name: b1000_eddy_unwarped.nii.gz
+        output_folder: eddy
+      b1000_eddy_unwarped_rotated_bvecs:
+        output_name: b1000_eddy_unwarped.eddy_rotated_bvecs
+        output_folder: eddy
+      b1000_eddy_unwarped_parameters:
+        output_name: b1000_eddy_unwarped.eddy_parameters
+        output_folder: eddy
+    shell:
+      - eddy_cuda10.2 --imain={input.b1000_denoised_degibbs} --mask={input.b1000_brain} --index={input.index_file} --acqp={input.acq_params} --bvecs={input.b1000_bvec} --bvals={input.b1000_bval} --fwhm={params.fwhm} --topup={input.b0_b1000_merged_topup} --flm={params.flm} --out={output.b1000_eddy_unwarped} --cnr_maps --repol
+      

@@ -1,3 +1,17 @@
+data/BIOPD01
+.snakemake
+snakemake
+untar/
+topup/
+.secrets.*
+BIOPD01*
+logs/*
+!logs/.gitkeep
+*.log
+software/*
+!software/README.md
+tests/**/*.smk
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

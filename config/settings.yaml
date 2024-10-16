@@ -1,0 +1,22 @@
+logger:
+  info:
+    path: logs/info.log
+    level: INFO
+  error:
+    path: logs/error.log
+    level: ERROR
+  debug:
+    path: logs/debug.log
+    level: DEBUG
+configuration_files:
+  rule_configuration: <path>SnakeMaker/config/demo_rule_config.yaml
+  snakefile_configuration: <path>SnakeMaker/config/demo_snakefile_config.yaml
+app:
+  APPLICATION_ROOT_PATH: default # by_output
+  FSLDIR: 
+  INPUT_DIR_PATH: data/input_data
+  OUTPUT_DIR_PATH: data/output_data/data
+  OUTPUT_RULE_MAKER_PATH: data/output_data/rules
+  OUTPUT_SNAKEMAKE_PATH: data/output_data
+  CUSTOM_FUNCTIONS_PATH_LIST: 
+    - <path>SnakeMaker/data/scripts/demo_functions.py

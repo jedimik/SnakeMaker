@@ -1,0 +1,24 @@
+---
+imports:
+vars:
+  samples: # reserved keyword for samples
+    paths:
+    function: 
+  input_path:
+    type: env
+    name: INPUT_DIR_PATH
+  output_path:
+    type: env
+    name: OUTPUT_DIR_PATH
+  wildcard_constraints: default
+
+include:
+  - rules.smk
+  - <path>SnakeMaker/data/scripts/demo_functions.py
+defaults:
+  wildcard_constraints:
+    sample: "'|'.join([re.escape(x) for x in samples])"
+
+rules:
+  all:
+    input: expand('{output_path}/eddy/{sample}/b1000_eddy_unwarped.nii.gz', sample=samples, output_path=output_path)

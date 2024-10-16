@@ -1,0 +1,21 @@
+{
+    "Name": "Example BIDS Dataset",
+    "BIDSVersion": "1.6.0",
+    "License": "CC0",
+    "Authors": [
+        "First Author",
+        "Second Author",
+        "Third Author"
+    ],
+    "Acknowledgements": "We thank all participants and institutions involved in this study.",
+    "HowToAcknowledge": "Please cite this dataset as: First Author et al. (Year). Title of the dataset. DOI or URL.",
+    "Funding": [
+        "Grant or funding agency 1",
+        "Grant or funding agency 2"
+    ],
+    "ReferencesAndLinks": [
+        "First Author et al. (Year). Title of the paper. Journal, Volume(Issue), Pages. DOI",
+        "Link to related project or dataset"
+    ],
+    "DatasetDOI": ""
+}
