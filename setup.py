@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-with open('requirements.txt') as f:
+with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 setup(
@@ -17,5 +17,5 @@ setup(
         "License :: OSI Approved :: MIT License",  # Or choose another appropriate license
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.12",  # Specify the minimum Python version required
+    python_requires=">=3.11",  # Specify the minimum Python version required
 )

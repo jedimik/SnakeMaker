@@ -12,7 +12,7 @@ configuration_files:
   rule_configuration: <path>SnakeMaker/config/demo_rule_config.yaml
   snakefile_configuration: <path>SnakeMaker/config/demo_snakefile_config.yaml
 app:
-  APPLICATION_ROOT_PATH: default # by_output
+  APPLICATION_ROOT_PATH: default
   FSLDIR: 
   INPUT_DIR_PATH: data/input_data
   OUTPUT_DIR_PATH: data/output_data/data

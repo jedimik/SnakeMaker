@@ -6,3 +6,4 @@ pandas
 pybids
 pytest
 pyyaml
+mkdocs
